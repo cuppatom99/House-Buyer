@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>House Buyer</title>
+  <title>House Buyer Extreme</title>
   <style>
     * {
       margin: 0;
@@ -32,63 +32,11 @@
 
     #player {
       position: absolute;
-      bottom: 0;
-      left: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .player-head {
       width: 30px;
-      height: 30px;
-      background-color: #00ff00;
-      border-radius: 50%;
-    }
-
-    .player-body {
-      width: 2px;
       height: 60px;
       background-color: #00ff00;
-      position: absolute;
-      top: 30px;
-    }
-
-    .player-arm {
-      width: 40px;
-      height: 2px;
-      background-color: #00ff00;
-      position: absolute;
-      top: 30px;
-    }
-
-    .player-arm.left {
-      transform: rotate(-45deg);
-      left: -20px;
-    }
-
-    .player-arm.right {
-      transform: rotate(45deg);
-      left: -20px;
-    }
-
-    .player-leg {
-      width: 2px;
-      height: 40px;
-      background-color: #00ff00;
-      position: absolute;
-    }
-
-    .player-leg.left {
-      left: 10px;
-      top: 90px;
-      transform: rotate(45deg);
-    }
-
-    .player-leg.right {
-      left: 10px;
-      top: 90px;
-      transform: rotate(-45deg);
+      bottom: 0;
+      left: 50px;
     }
 
     .house {
@@ -160,14 +108,7 @@
 </head>
 <body>
   <div id="game-container">
-    <div id="player">
-      <div class="player-head"></div>
-      <div class="player-body"></div>
-      <div class="player-arm left"></div>
-      <div class="player-arm right"></div>
-      <div class="player-leg left"></div>
-      <div class="player-leg right"></div>
-    </div>
+    <div id="player"></div>
     <div class="house" style="left: 50px; top: 200px;">
       <div class="roof"></div>
       <div class="door"></div>
@@ -292,4 +233,19 @@
             posY = houseRect.top - player.clientHeight;
             velocityY = 0;
             isJumping = false;
-            isOnHouse
+            isOnHouse = true;
+          }
+        });
+
+        // Update player position
+        player.style.left = `${posX}px`;
+        player.style.top = `${posY}px`;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
