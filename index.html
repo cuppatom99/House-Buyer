@@ -170,30 +170,31 @@
     }
 
     function playMelody() {
-      const melody = [
+      const melody1 = [
         { pitch: 261.63, duration: 0.5 }, // C4
         { pitch: 392.00, duration: 0.5 }, // G4
         { pitch: 329.63, duration: 0.5 }, // E4
         { pitch: 392.00, duration: 0.5 }, // G4
       ];
 
-      let time = audioContext.currentTime;
-      melody.forEach(note => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(note.pitch, time);
-        gainNode.gain.setValueAtTime(0.1, time);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        oscillator.start(time);
-        oscillator.stop(time + note.duration);
-        time += note.duration;
-      });
+      const melody2 = [
+        { pitch: 261.63, duration: 0.5 }, // C4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 349.23, duration: 0.5 }, // F4
+        { pitch: 392.00, duration: 0.5 }, // G4
+        { pitch: 349.23, duration: 0.5 }, // F4
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 261.63, duration: 0.5 }, // C4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 261.63, duration: 0.5 }, // C4
+      ];
 
-      // Repeat the melody every 2 seconds
-      setInterval(() => {
-        time = audioContext.currentTime;
+      function playSequence(melody, interval) {
+        let time = audioContext.currentTime;
         melody.forEach(note => {
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
@@ -206,7 +207,28 @@
           oscillator.stop(time + note.duration);
           time += note.duration;
         });
-      }, 2000);
+        return setInterval(() => {
+          time = audioContext.currentTime;
+          melody.forEach(note => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(note.pitch, time);
+            gainNode.gain.setValueAtTime(0.1, time);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start(time);
+            oscillator.stop(time + note.duration);
+            time += note.duration;
+          });
+        }, interval);
+      }
+
+      // Play the first melody every 4 seconds
+      playSequence(melody1, 4000);
+
+      // Play the second melody every 10 seconds
+      playSequence(melody2, 10000);
     }
 
     function playGameOverSound() {
@@ -238,8 +260,7 @@
         } else if (e.code === 'ArrowRight') {
           velocityX = moveSpeed;
         } else if (e.code === 'Space') {
-          // Allow jump if not in the air or if already jumping
-          if (posY === 0) {
+          if (posY === 0) { // Jump if on the floor
             velocityY = -jumpStrength;
             isJumping = true;
           }
@@ -264,8 +285,7 @@
 
     jumpButton.addEventListener('mousedown', () => {
       if (!isGameOver) {
-        // Allow jump if not in the air or if already jumping
-        if (posY === 0) {
+        if (posY === 0) { // Jump if on the floor
           velocityY = -jumpStrength;
           isJumping = true;
         }
