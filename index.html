@@ -35,7 +35,7 @@
       width: 30px;
       height: 60px;
       background-color: #00ff00;
-      bottom: 0;
+      bottom: 0; /* Ensure character starts on the floor */
       left: 50px;
     }
 
@@ -149,7 +149,7 @@
     let velocityX = 0;
     let velocityY = 0;
     let isJumping = false;
-    let isOnHouse = false;
+    let isOnGround = false;
     let isGameOver = false;
 
     const gravity = 0.5;
@@ -283,10 +283,12 @@
         posY += velocityY;
 
         // Apply gravity
-        velocityY += gravity;
+        if (!isOnGround) {
+          velocityY += gravity;
+        }
 
         // Collision detection with houses
-        isOnHouse = false;
+        isOnGround = false;
         houses.forEach(house => {
           const rect = house.getBoundingClientRect();
           const playerRect = player.getBoundingClientRect();
@@ -301,7 +303,7 @@
             posY = rect.top - playerRect.height;
             velocityY = 0;
             isJumping = false;
-            isOnHouse = true;
+            isOnGround = true;
           }
         });
 
@@ -315,6 +317,7 @@
           posY = gameContainer.clientHeight - player.clientHeight;
           velocityY = 0;
           isJumping = false;
+          isOnGround = true;
         }
 
         player.style.left = `${posX}px`;
