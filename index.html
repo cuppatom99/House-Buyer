@@ -156,10 +156,73 @@
     const moveSpeed = 3;
     const jumpStrength = 10;
 
+    // Audio context for generating sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(frequency, duration) {
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      oscillator.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    function playMelody() {
+      const melody = [
+        { pitch: 261.63, duration: 0.5 }, // C4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 349.23, duration: 0.5 }, // F4
+        { pitch: 392.00, duration: 0.5 }, // G4
+        { pitch: 440.00, duration: 0.5 }, // A4
+        { pitch: 493.88, duration: 0.5 }, // B4
+        { pitch: 523.25, duration: 0.5 }, // C5
+      ];
+
+      let time = audioContext.currentTime;
+      melody.forEach(note => {
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(note.pitch, time);
+        oscillator.connect(audioContext.destination);
+        oscillator.start(time);
+        oscillator.stop(time + note.duration);
+        time += note.duration;
+      });
+
+      // Repeat the melody every 4 seconds
+      setInterval(() => {
+        time = audioContext.currentTime;
+        melody.forEach(note => {
+          const oscillator = audioContext.createOscillator();
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(note.pitch, time);
+          oscillator.connect(audioContext.destination);
+          oscillator.start(time);
+          oscillator.stop(time + note.duration);
+          time += note.duration;
+        });
+      }, 4000);
+    }
+
+    function playGameOverSound() {
+      playTone(440, 5); // A4 tone for 5 seconds
+    }
+
+    function stopMusic() {
+      audioContext.close();
+    }
+
+    // Start playing the melody
+    playMelody();
+
     // Start a timer for the game over screen (10 seconds)
     setTimeout(() => {
       isGameOver = true;
       gameOverScreen.style.visibility = 'visible';
+      stopMusic();
+      playGameOverSound();
     }, 10000); // 10000 milliseconds = 10 seconds
 
     // Key press event listeners
@@ -211,59 +274,4 @@
         // Apply gravity
         velocityY += gravity;
 
-        // Prevent falling through the bottom
-        if (posY >= gameContainer.clientHeight - player.clientHeight) {
-          posY = gameContainer.clientHeight - player.clientHeight;
-          velocityY = 0;
-          isJumping = false;
-        }
-
-        // House collision detection
-        isOnHouse = false;
-        houses.forEach((house) => {
-          const houseRect = house.getBoundingClientRect();
-          const playerRect = player.getBoundingClientRect();
-
-          if (
-            playerRect.left < houseRect.right &&
-            playerRect.right > houseRect.left &&
-            playerRect.bottom <= houseRect.top + 5 &&
-            playerRect.bottom >= houseRect.top &&
-            velocityY >= 0
-          ) {
-            posY = houseRect.top - player.clientHeight;
-            velocityY = 0;
-            isJumping = false;
-            isOnHouse = true;
-          }
-        });
-
-        // Update player position
-        player.style.left = `${posX}px`;
-        player.style.top = `${posY}px`;
-      }
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-
-    // Audio context for generating sound
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playTone(frequency, duration) {
-      const oscillator = audioContext.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-      oscillator.connect(audioContext.destination);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + duration);
-    }
-
-    function playMelody() {
-      const melody = [
-        { pitch: 261.63, duration: 0.5 }, // C4
-        { pitch: 293.66, duration: 0.5 }, // D4
-        { pitch: 329.63, duration: 0.5 }, // E4
-        { pitch: 349.23, duration: 0.5 }, // F4
-        { pitch: 392.00, duration: 0.5 }, // G4
+       
