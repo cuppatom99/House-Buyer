@@ -159,11 +159,14 @@
     // Audio context for generating sound
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playTone(frequency, duration) {
+    function playTone(frequency, duration, volume = 0.1) {
       const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-      oscillator.connect(audioContext.destination);
+      gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
       oscillator.start();
       oscillator.stop(audioContext.currentTime + duration);
     }
@@ -183,9 +186,12 @@
       let time = audioContext.currentTime;
       melody.forEach(note => {
         const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(note.pitch, time);
-        oscillator.connect(audioContext.destination);
+        gainNode.gain.setValueAtTime(0.1, time);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
         oscillator.start(time);
         oscillator.stop(time + note.duration);
         time += note.duration;
@@ -196,9 +202,12 @@
         time = audioContext.currentTime;
         melody.forEach(note => {
           const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
           oscillator.type = 'sine';
           oscillator.frequency.setValueAtTime(note.pitch, time);
-          oscillator.connect(audioContext.destination);
+          gainNode.gain.setValueAtTime(0.1, time);
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
           oscillator.start(time);
           oscillator.stop(time + note.duration);
           time += note.duration;
