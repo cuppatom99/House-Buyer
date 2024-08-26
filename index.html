@@ -148,7 +148,6 @@
     let velocityX = 0;
     let velocityY = 0;
     let isJumping = false;
-    let isOnGround = true;
     let isGameOver = false;
 
     const gravity = 0.5;
@@ -173,13 +172,9 @@
     function playMelody() {
       const melody = [
         { pitch: 261.63, duration: 0.5 }, // C4
-        { pitch: 293.66, duration: 0.5 }, // D4
-        { pitch: 329.63, duration: 0.5 }, // E4
-        { pitch: 349.23, duration: 0.5 }, // F4
         { pitch: 392.00, duration: 0.5 }, // G4
-        { pitch: 440.00, duration: 0.5 }, // A4
-        { pitch: 493.88, duration: 0.5 }, // B4
-        { pitch: 523.25, duration: 0.5 }, // C5
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 392.00, duration: 0.5 }, // G4
       ];
 
       let time = audioContext.currentTime;
@@ -196,7 +191,7 @@
         time += note.duration;
       });
 
-      // Repeat the melody every 4 seconds
+      // Repeat the melody every 2 seconds
       setInterval(() => {
         time = audioContext.currentTime;
         melody.forEach(note => {
@@ -211,7 +206,7 @@
           oscillator.stop(time + note.duration);
           time += note.duration;
         });
-      }, 4000);
+      }, 2000);
     }
 
     function playGameOverSound() {
@@ -242,10 +237,12 @@
           velocityX = -moveSpeed;
         } else if (e.code === 'ArrowRight') {
           velocityX = moveSpeed;
-        } else if (e.code === 'Space' && isOnGround) {
-          velocityY = -jumpStrength;
-          isJumping = true;
-          isOnGround = false;
+        } else if (e.code === 'Space') {
+          // Allow jump if not in the air or if already jumping
+          if (posY === 0) {
+            velocityY = -jumpStrength;
+            isJumping = true;
+          }
         }
       }
     });
@@ -266,10 +263,12 @@
     });
 
     jumpButton.addEventListener('mousedown', () => {
-      if (!isGameOver && isOnGround) {
-        velocityY = -jumpStrength;
-        isJumping = true;
-        isOnGround = false;
+      if (!isGameOver) {
+        // Allow jump if not in the air or if already jumping
+        if (posY === 0) {
+          velocityY = -jumpStrength;
+          isJumping = true;
+        }
       }
     });
 
@@ -283,8 +282,8 @@
         posX += velocityX;
         posY += velocityY;
 
-        // Apply gravity if not on the ground
-        if (!isOnGround) {
+        // Apply gravity if not jumping
+        if (posY > 0) {
           velocityY += gravity;
         }
 
@@ -293,7 +292,6 @@
           posY = 0;
           velocityY = 0;
           isJumping = false;
-          isOnGround = true;
         }
 
         // Keep player within game container bounds horizontally
