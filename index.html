@@ -135,6 +135,7 @@
   </div>
 
   <script>
+    // Game logic
     const player = document.getElementById('player');
     const houses = document.querySelectorAll('.house');
     const gameContainer = document.getElementById('game-container');
@@ -246,6 +247,23 @@
     }
 
     gameLoop();
-  </script>
-</body>
-</html>
+
+    // Audio context for generating sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(frequency, duration) {
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      oscillator.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    function playMelody() {
+      const melody = [
+        { pitch: 261.63, duration: 0.5 }, // C4
+        { pitch: 293.66, duration: 0.5 }, // D4
+        { pitch: 329.63, duration: 0.5 }, // E4
+        { pitch: 349.23, duration: 0.5 }, // F4
+        { pitch: 392.00, duration: 0.5 }, // G4
