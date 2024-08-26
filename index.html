@@ -207,10 +207,12 @@
     }
 
     function playGameOverSound() {
-      playTone(440, 5); // A4 tone for 5 seconds
+      // Play a sine wave tone for 5 seconds on game over
+      playTone(440, 5); // A4 tone
     }
 
     function stopMusic() {
+      // Stop all sounds
       audioContext.close();
     }
 
@@ -274,4 +276,46 @@
         // Apply gravity
         velocityY += gravity;
 
-       
+        // Collision detection with houses
+        isOnHouse = false;
+        houses.forEach(house => {
+          const rect = house.getBoundingClientRect();
+          const playerRect = player.getBoundingClientRect();
+
+          if (
+            playerRect.left < rect.right &&
+            playerRect.right > rect.left &&
+            playerRect.bottom > rect.top &&
+            playerRect.bottom < rect.bottom &&
+            velocityY > 0
+          ) {
+            posY = rect.top - playerRect.height;
+            velocityY = 0;
+            isJumping = false;
+            isOnHouse = true;
+          }
+        });
+
+        // Keep player within game container bounds
+        if (posX < 0) posX = 0;
+        if (posX > gameContainer.clientWidth - player.clientWidth) {
+          posX = gameContainer.clientWidth - player.clientWidth;
+        }
+
+        if (posY > gameContainer.clientHeight - player.clientHeight) {
+          posY = gameContainer.clientHeight - player.clientHeight;
+          velocityY = 0;
+          isJumping = false;
+        }
+
+        player.style.left = `${posX}px`;
+        player.style.bottom = `${posY}px`;
+
+        requestAnimationFrame(gameLoop);
+      }
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
