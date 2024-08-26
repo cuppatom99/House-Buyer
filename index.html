@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>House Buyer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #game-container {
+      position: relative;
+      width: 800px;
+      height: 600px;
+      background-color: #000;
+      border: 2px solid #fff;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 0;
+      left: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .player-head {
+      width: 30px;
+      height: 30px;
+      background-color: #00ff00;
+      border-radius: 50%;
+    }
+
+    .player-body {
+      width: 2px;
+      height: 60px;
+      background-color: #00ff00;
+      position: absolute;
+      top: 30px;
+    }
+
+    .player-arm {
+      width: 40px;
+      height: 2px;
+      background-color: #00ff00;
+      position: absolute;
+      top: 30px;
+    }
+
+    .player-arm.left {
+      transform: rotate(-45deg);
+      left: -20px;
+    }
+
+    .player-arm.right {
+      transform: rotate(45deg);
+      left: -20px;
+    }
+
+    .player-leg {
+      width: 2px;
+      height: 40px;
+      background-color: #00ff00;
+      position: absolute;
+    }
+
+    .player-leg.left {
+      left: 10px;
+      top: 90px;
+      transform: rotate(45deg);
+    }
+
+    .player-leg.right {
+      left: 10px;
+      top: 90px;
+      transform: rotate(-45deg);
+    }
+
+    .house {
+      position: absolute;
+      width: 100px;
+      height: 80px;
+      border: 2px solid #ff0000;
+      background: none;
+    }
+
+    .roof {
+      position: absolute;
+      top: -30px;
+      left: -10px;
+      width: 120px;
+      height: 60px;
+      border: 2px solid #ff0000;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      background: none;
+    }
+
+    .door {
+      position: absolute;
+      bottom: 0;
+      left: 40%;
+      width: 20px;
+      height: 40px;
+      background-color: #ff0000;
+    }
+
+    #game-over-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 48px;
+      visibility: hidden;
+      z-index: 10;
+    }
+
+    #controls {
+      margin-top: 20px;
+      display: flex;
+    }
+
+    .control-button {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      font-size: 24px;
+      text-align: center;
+      line-height: 60px;
+      background-color: #444;
+      color: #fff;
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    .control-button:active {
+      background-color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="player">
+      <div class="player-head"></div>
+      <div class="player-body"></div>
+      <div class="player-arm left"></div>
+      <div class="player-arm right"></div>
+      <div class="player-leg left"></div>
+      <div class="player-leg right"></div>
+    </div>
+    <div class="house" style="left: 50px; top: 200px;">
+      <div class="roof"></div>
+      <div class="door"></div>
+    </div>
+    <div class="house" style="left: 200px; top: 300px; width: 150px;">
+      <div class="roof" style="width: 170px; left: -20px;"></div>
+      <div class="door" style="left: 60%;"></div>
+    </div>
+    <div class="house" style="left: 400px; top: 250px;">
+      <div class="roof"></div>
+      <div class="door"></div>
+    </div>
+    <div class="house" style="left: 600px; top: 150px; width: 120px;">
+      <div class="roof" style="width: 140px; left: -10px;"></div>
+      <div class="door" style="left: 50%;"></div>
+    </div>
+    <div id="game-over-screen">GAME OVER</div>
+  </div>
+
+  <div id="controls">
+    <div class="control-button" id="left-button">←</div>
+    <div class="control-button" id="jump-button">↑</div>
+    <div class="control-button" id="right-button">→</div>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const houses = document.querySelectorAll('.house');
+    const gameContainer = document.getElementById('game-container');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const leftButton = document.getElementById('left-button');
+    const rightButton = document.getElementById('right-button');
+    const jumpButton = document.getElementById('jump-button');
+
+    let posX = 50;
+    let posY = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let isJumping = false;
+    let isOnHouse = false;
+    let isGameOver = false;
+
+    const gravity = 0.5;
+    const moveSpeed = 3;
+    const jumpStrength = 10;
+
+    // Start a timer for the game over screen (10 seconds)
+    setTimeout(() => {
+      isGameOver = true;
+      gameOverScreen.style.visibility = 'visible';
+    }, 10000); // 10000 milliseconds = 10 seconds
+
+    // Key press event listeners
+    document.addEventListener('keydown', (e) => {
+      if (!isGameOver) {
+        if (e.code === 'ArrowLeft') {
+          velocityX = -moveSpeed;
+        } else if (e.code === 'ArrowRight') {
+          velocityX = moveSpeed;
+        } else if (e.code === 'Space' && !isJumping) {
+          velocityY = -jumpStrength;
+          isJumping = true;
+        }
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (!isGameOver && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+        velocityX = 0;
+      }
+    });
+
+    // On-screen control event listeners
+    leftButton.addEventListener('mousedown', () => {
+      if (!isGameOver) velocityX = -moveSpeed;
+    });
+
+    rightButton.addEventListener('mousedown', () => {
+      if (!isGameOver) velocityX = moveSpeed;
+    });
+
+    jumpButton.addEventListener('mousedown', () => {
+      if (!isGameOver && !isJumping) {
+        velocityY = -jumpStrength;
+        isJumping = true;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isGameOver) velocityX = 0;
+    });
+
+    // Game loop
+    function gameLoop() {
+      if (!isGameOver) {
+        posX += velocityX;
+        posY += velocityY;
+
+        // Apply gravity
+        velocityY += gravity;
+
+        // Prevent falling through the bottom
+        if (posY >= gameContainer.clientHeight - player.clientHeight) {
+          posY = gameContainer.clientHeight - player.clientHeight;
+          velocityY = 0;
+          isJumping = false;
+        }
+
+        // House collision detection
+        isOnHouse = false;
+        houses.forEach((house) => {
+          const houseRect = house.getBoundingClientRect();
+          const playerRect = player.getBoundingClientRect();
+
+          if (
+            playerRect.left < houseRect.right &&
+            playerRect.right > houseRect.left &&
+            playerRect.bottom <= houseRect.top + 5 &&
+            playerRect.bottom >= houseRect.top &&
+            velocityY >= 0
+          ) {
+            posY = houseRect.top - player.clientHeight;
+            velocityY = 0;
+            isJumping = false;
+            isOnHouse
