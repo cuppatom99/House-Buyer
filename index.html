@@ -137,7 +137,6 @@
   <script>
     // Game logic
     const player = document.getElementById('player');
-    const houses = document.querySelectorAll('.house');
     const gameContainer = document.getElementById('game-container');
     const gameOverScreen = document.getElementById('game-over-screen');
     const leftButton = document.getElementById('left-button');
@@ -149,7 +148,7 @@
     let velocityX = 0;
     let velocityY = 0;
     let isJumping = false;
-    let isOnGround = false;
+    let isOnGround = true;
     let isGameOver = false;
 
     const gravity = 0.5;
@@ -243,9 +242,10 @@
           velocityX = -moveSpeed;
         } else if (e.code === 'ArrowRight') {
           velocityX = moveSpeed;
-        } else if (e.code === 'Space' && !isJumping) {
+        } else if (e.code === 'Space' && isOnGround) {
           velocityY = -jumpStrength;
           isJumping = true;
+          isOnGround = false;
         }
       }
     });
@@ -266,9 +266,10 @@
     });
 
     jumpButton.addEventListener('mousedown', () => {
-      if (!isGameOver && !isJumping) {
+      if (!isGameOver && isOnGround) {
         velocityY = -jumpStrength;
         isJumping = true;
+        isOnGround = false;
       }
     });
 
@@ -282,42 +283,23 @@
         posX += velocityX;
         posY += velocityY;
 
-        // Apply gravity
+        // Apply gravity if not on the ground
         if (!isOnGround) {
           velocityY += gravity;
         }
 
-        // Collision detection with houses
-        isOnGround = false;
-        houses.forEach(house => {
-          const rect = house.getBoundingClientRect();
-          const playerRect = player.getBoundingClientRect();
-
-          if (
-            playerRect.left < rect.right &&
-            playerRect.right > rect.left &&
-            playerRect.bottom > rect.top &&
-            playerRect.bottom < rect.bottom &&
-            velocityY > 0
-          ) {
-            posY = rect.top - playerRect.height;
-            velocityY = 0;
-            isJumping = false;
-            isOnGround = true;
-          }
-        });
-
-        // Keep player within game container bounds
-        if (posX < 0) posX = 0;
-        if (posX > gameContainer.clientWidth - player.clientWidth) {
-          posX = gameContainer.clientWidth - player.clientWidth;
-        }
-
-        if (posY > gameContainer.clientHeight - player.clientHeight) {
-          posY = gameContainer.clientHeight - player.clientHeight;
+        // Check if player hits the floor
+        if (posY < 0) {
+          posY = 0;
           velocityY = 0;
           isJumping = false;
           isOnGround = true;
+        }
+
+        // Keep player within game container bounds horizontally
+        if (posX < 0) posX = 0;
+        if (posX > gameContainer.clientWidth - player.clientWidth) {
+          posX = gameContainer.clientWidth - player.clientWidth;
         }
 
         player.style.left = `${posX}px`;
